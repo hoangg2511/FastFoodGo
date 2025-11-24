@@ -25,7 +25,7 @@ class ThongTinViewModel extends ChangeNotifier{
     final randomString = List.generate(length, (_) => chars[rand.nextInt(chars.length)]).join();
     return 'DC$randomString';
   }
-  Future<void> ThemDiaChi(String ten,String sdt,String phuongXa,String quanHuyen,String tinhTP,int trangThaiInt,String diaChi,String MaKh) async {
+  Future<void> ThemDiaChi(String ten,String sdt,String phuongXa,String quanHuyen,String tinhTP,int trangThaiInt,String diaChi,String MaKh,String email,String matKhau) async {
     print("Gọi hàm thêm địa chỉ");
     try {
       // 1️⃣ Thêm địa chỉ và lấy MaDiaChi
@@ -40,14 +40,17 @@ class ThongTinViewModel extends ChangeNotifier{
           tinhTp: tinhTP,
           DCCuThe: diaChi
       );
-
+      await _repoDiaChi.addDiaChi(dc);
 
       final nd = NguoiDung(
         id: MaKh,
         hoTen: ten,
         sdt: sdt,
         diaChi:dc.id,
+        email: email,
+        matKhau: matKhau,
       );
+
       // 2️⃣ Tạo hoặc cập nhật người dùng
       await _repoNguoiDung.taoNguoiDung(nd);
 

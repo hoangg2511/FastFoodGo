@@ -4,6 +4,7 @@ class ChiTietDonHangModel {
   final String? maCTDH;
   final String maDH;
   final String maMonAn;
+  final String maDiaChi;
   int soLuong;
   int gia;
   final String? note;
@@ -14,6 +15,7 @@ class ChiTietDonHangModel {
     this.maCTDH,
     required this.maDH,
     required this.maMonAn,
+    required this.maDiaChi,
     required this.soLuong,
     required this.gia,
     this.note,
@@ -26,6 +28,7 @@ class ChiTietDonHangModel {
       'maCTDH': maCTDH,
       'maDH': maDH,
       'maMonAn': maMonAn,
+      'maDiaChi':maDiaChi,
       'soLuong': soLuong,
       'gia': gia,
       'note': note,
@@ -40,6 +43,7 @@ class ChiTietDonHangModel {
       maCTDH: json['maCTDH'],
       maDH: json['maDH'],
       maMonAn: json['maMonAn'],
+      maDiaChi:json['maDiaChi'],
       soLuong: json['soLuong'],
       gia: json['gia'],
       note: json['note'],

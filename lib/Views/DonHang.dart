@@ -293,14 +293,14 @@ class _DonHangPageState extends State<DonHangPage> with SingleTickerProviderStat
                           ),
                         ],
                       ),
-                     Text(
-                       'Option món ăn',   // 🔥 Chỉ giữ value
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.orange[700],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                     // Text(
+                     //   'Option món ăn',   // 🔥 Chỉ giữ value
+                     //    style: TextStyle(
+                     //      fontSize: 10,
+                     //      color: Colors.orange[700],
+                     //      fontWeight: FontWeight.w500,
+                     //    ),
+                     //  ),
                     const SizedBox(height: 8),
                       Row(
                         children: [

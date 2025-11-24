@@ -1,7 +1,11 @@
 import 'package:fastfoodgo/Models/DiaChiModel.dart';
 import 'package:fastfoodgo/Models/NguoiDungModel.dart';
+import 'package:fastfoodgo/ViewModels/DangNhapViewModel.dart';
+import 'package:fastfoodgo/ViewModels/DiaChiViewModel.dart';
+import 'package:fastfoodgo/ViewModels/NguoiDungViewModel.dart';
 import 'package:fastfoodgo/ViewModels/ThongTinViewModel.dart';
 import 'package:fastfoodgo/ViewModels/TrangChuViewModel.dart';
+import 'package:fastfoodgo/Views/DangNhap.dart';
 import 'package:fastfoodgo/Views/Nav.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,9 +14,10 @@ import 'TrangChu.dart';
 
 class DiaChi extends StatefulWidget {
   final String maKH;
+  final String email;
   final Map<String, dynamic>? existingAddress;
 
-  const DiaChi({super.key, this.existingAddress,required this.maKH});
+  const DiaChi({super.key, this.existingAddress, required this.maKH, required this.email});
 
   @override
   State<DiaChi> createState() => _CapNhatDiaChiPageState();
@@ -20,6 +25,9 @@ class DiaChi extends StatefulWidget {
 
 class _CapNhatDiaChiPageState extends State<DiaChi> {
   late ThongTinViewModel thongTin;
+  late String email;
+  late String maKH;
+
   final _formKey = GlobalKey<FormState>();
   final _hoTenController = TextEditingController();
   final _soDienThoaiController = TextEditingController();
@@ -27,15 +35,25 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
   final _phuongXaController = TextEditingController();
   final _quanHuyenController = TextEditingController();
   final _tinhThanhController = TextEditingController();
+  final _matKhauHienTaiController = TextEditingController();
+  final _matKhauMoiController = TextEditingController();
+  final _xacNhanMatKhauController = TextEditingController();
 
   bool _isDefaultAddress = false;
   bool _isLoading = false;
+  bool _showPasswordFields = false;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
     super.initState();
 
-    // Khởi tạo ViewModel từ Provider
+    /// ❗ GÁN GIÁ TRỊ ĐÚNG TỪ widget
+    email = widget.email;
+    maKH = widget.maKH;
+
     thongTin = Provider.of<ThongTinViewModel>(context, listen: false);
 
     if (widget.existingAddress != null) {
@@ -49,7 +67,6 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
     }
   }
 
-
   @override
   void dispose() {
     _hoTenController.dispose();
@@ -58,7 +75,9 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
     _phuongXaController.dispose();
     _quanHuyenController.dispose();
     _tinhThanhController.dispose();
-
+    _matKhauHienTaiController.dispose();
+    _matKhauMoiController.dispose();
+    _xacNhanMatKhauController.dispose();
     super.dispose();
   }
 
@@ -71,8 +90,8 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
     final phuongXa = _phuongXaController.text.trim();
     final quanHuyen = _quanHuyenController.text.trim();
     final tinhTP = _tinhThanhController.text.trim();
-    final trangThai = _isDefaultAddress;
-    final int trangThaiInt = trangThai ? 1 : 0;
+    final trangThaiInt = _isDefaultAddress ? 1 : 0;
+
     if (ten.isEmpty || sdt.isEmpty || diaChi.isEmpty ||
         phuongXa.isEmpty || quanHuyen.isEmpty || tinhTP.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,71 +100,52 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
       return;
     }
 
-    // 🔹 1) Tạo đối tượng NguoiDung
-    final nd = NguoiDung(
-      hoTen: ten,
-      sdt: sdt,
+    if (_showPasswordFields) {
+      if (_matKhauMoiController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Vui lòng nhập mật khẩu")),
+        );
+        return;
+      }
+      if (_matKhauMoiController.text.length < 6) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Mật khẩu phải có ít nhất 6 ký tự")),
+        );
+        return;
+      }
+      if (_matKhauMoiController.text != _xacNhanMatKhauController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Mật khẩu xác nhận không khớp")),
+        );
+        return;
+      }
+
+
+    }
+    print("thêm thông tin và địa chỉ");
+
+    await thongTin.ThemDiaChi(
+      ten,
+      sdt,
+      phuongXa,
+      quanHuyen,
+      tinhTP,
+      trangThaiInt,
+      diaChi,
+      maKH,
+      email,
+      _matKhauMoiController.text,
     );
-
-    // 🔹 2) Tạo đối tượng DiaChiModel
-    final dc = DiaChiModel(
-      phuongXa: phuongXa,
-      quanHuyen: quanHuyen,
-      tinhTp: tinhTP,
-      status: trangThaiInt,
-      DCCuThe: diaChi,
-        id: '',
-        soNha: '',
-        Duong: '',
-        maCH: '',
-
-    );
-    thongTin.ThemDiaChi(ten,sdt,phuongXa,quanHuyen,tinhTP,trangThaiInt,diaChi,widget.maKH);
-
-
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => Trangchu()),
+      MaterialPageRoute(builder: (_) => DangNhap()),
           (route) => false,
     );
   }
 
-  Future<void> _saveAddress() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      final addressData = {
-        'hoTen': _hoTenController.text,
-        'soDienThoai': _soDienThoaiController.text,
-        'diaChi': _diaChiController.text,
-        'phuongXa': _phuongXaController.text,
-        'quanHuyen': _quanHuyenController.text,
-        'tinhThanh': _tinhThanhController.text,
-        'isDefault': _isDefaultAddress,
-      };
-
-      setState(() => _isLoading = false);
-
-      if (mounted) {
-        Navigator.pop(context, addressData);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.existingAddress != null
-                ? 'Cập nhật địa chỉ thành công'
-                : 'Thêm địa chỉ mới thành công'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    ThongTinViewModel thongTinVM = ThongTinViewModel();
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -155,9 +155,9 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'Cập nhật thông tin',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black87,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -171,7 +171,7 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
           padding: const EdgeInsets.all(16),
           children: [
             // Thông tin liên hệ
-            _buildSectionTitle('Thông tin liên hệ'),
+            _buildSectionTitle('Thông tin liên hệ', Icons.person),
             const SizedBox(height: 12),
             _buildTextField(
               controller: _hoTenController,
@@ -204,9 +204,128 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
             ),
 
             const SizedBox(height: 24),
+            // Đổi mật khẩu section
+            _buildSectionTitle('Bảo mật', Icons.lock),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[50],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.vpn_key, color: Colors.orange[700], size: 20),
+                    ),
+                    title: const Text(
+                      'Nhập thông tin mật khẩu',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    // subtitle: Text(
+                    //   'Nhập thông tin mật khẩu mới',
+                    //   style: TextStyle(fontSize: 12, color: Colors.grey),
+                    // ),
+                  ),
 
+                  Divider(color: Colors.grey[200], height: 1),
+
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16),
+
+                        _buildPasswordField(
+                          controller: _matKhauMoiController,
+                          label: 'Mật khẩu ',
+                          hint: 'Nhập mật khẩu  (tối thiểu 6 ký tự)',
+                          obscureText: _obscureNewPassword,
+                          onToggleVisibility: () {
+                            setState(() => _obscureNewPassword = !_obscureNewPassword);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng nhập mật khẩu ';
+                            }
+                            if (value.length < 6) {
+                              return 'Mật khẩu phải có ít nhất 6 ký tự';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _buildPasswordField(
+                          controller: _xacNhanMatKhauController,
+                          label: 'Xác nhận mật khẩu ',
+                          hint: 'Nhập lại mật khẩu ',
+                          obscureText: _obscureConfirmPassword,
+                          onToggleVisibility: () {
+                            setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng xác nhận mật khẩu';
+                            }
+                            if (value != _matKhauMoiController.text) {
+                              return 'Mật khẩu xác nhận không khớp';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Mật khẩu mạnh nên có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.blue[700],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+            ),
+
+            const SizedBox(height: 32),
             // Địa chỉ
-            _buildSectionTitle('Địa chỉ'),
+            _buildSectionTitle('Địa chỉ', Icons.location_on),
             const SizedBox(height: 12),
             _buildTextField(
               controller: _tinhThanhController,
@@ -301,12 +420,14 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+
+
             // Nút lưu
             SizedBox(
               height: 50,
               child: ElevatedButton(
-                onPressed: () => CapNhatThongTin(context),
+                onPressed: _isLoading ? null : () => CapNhatThongTin(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange[700],
                   shape: RoundedRectangleBorder(
@@ -323,9 +444,9 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-                    : Text(
-                  'Cập nhật',
-                  style: const TextStyle(
+                    : const Text(
+                  'Cập nhật thông tin',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -333,20 +454,34 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
-      ),
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.orange[50],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: Colors.orange[700], size: 20),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+      ],
     );
   }
 
@@ -399,12 +534,57 @@ class _CapNhatDiaChiPageState extends State<DiaChi> {
     );
   }
 
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(Icons.lock_outline, color: Colors.orange[700]),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            color: Colors.grey[600],
+          ),
+          onPressed: onToggleVisibility,
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[200]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[200]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.orange[700]!, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      ),
+    );
+  }
+
   void _showLocationPicker(String title) {
-    // Danh sách mẫu - trong thực tế nên lấy từ API
     final List<String> locations = title == 'Tỉnh/Thành phố'
         ? ['Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Cần Thơ', 'Hải Phòng']
         : title == 'Quận/Huyện'
-        ? ['Quận 1', 'Quận 2', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 7', 'Thủ Đức','Tân Bình','Tân Phú','Bình Tân','Nhà Bè']
+        ? ['Quận 1', 'Quận 2', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 7', 'Thủ Đức', 'Tân Bình', 'Tân Phú', 'Bình Tân', 'Nhà Bè']
         : ['Phường Bến Nghé', 'Phường Bến Thành', 'Phường Cô Giang', 'Phường Nguyễn Cư Trinh'];
 
     showModalBottomSheet(

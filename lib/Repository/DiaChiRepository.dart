@@ -7,19 +7,26 @@ import '../Models/DiaChiModel.dart';
 class DiaChiRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ApiService apiService = ApiService();
-  // Lấy danh sách địa chỉ của user
-  Future<List<DiaChiModel>> getDiaChiByUser(String userId) async {
-    try {
-      final snapshot = await _firestore
-          .collection('DiaChi')
-          .where('Users', isEqualTo: userId) // lưu ý trường trong model
-          .get();
 
-      return snapshot.docs
-          .map((doc) => DiaChiModel.fromJson(doc.data())..id = doc.id)
-          .toList();
+
+  // Lấy danh sách địa chỉ của user
+  Future<List<DiaChiModel>> getDiaChiByUser() async {
+    try {
+      final data = await apiService.getJsonList('DiaChis/KhachHang');
+
+      if (data.isEmpty) {
+        print("⚠️ Không có địa chỉ nào cho khách hàng");
+        return [];
+      }
+      final addresses = data.map((e) => DiaChiModel.fromJson(e)).toList();
+
+      // 🔹 Log ra JSON đẹp
+      print("📦 Dữ liệu địa chỉ:");
+      print(const JsonEncoder.withIndent('  ').convert(data));
+
+      return addresses;
     } catch (e) {
-      print("Lỗi khi lấy danh sách địa chỉ: $e");
+      print("❌ Lỗi khi lấy địa chỉ: $e");
       return [];
     }
   }
@@ -90,20 +97,29 @@ class DiaChiRepository {
     }
   }
 
-
-  // Cập nhật địa chỉ
-  Future<void> updateDiaChi(String id, DiaChiModel diaChi) async {
+  Future<void> updateDiaChi(DiaChiModel diaChi) async {
     try {
-      await _firestore.collection('DiaChi').doc(id).update(diaChi.toJson());
+      final data = diaChi.toJson();
+      // Giả sử endpoint của API là ChiTietDiaChis/{id}
+      final response = await apiService.putJson('DiaChis/${diaChi.id}', data);
+      if (response != null) {
+        print("✅ Cập nhật địa chỉ thành công: ${diaChi.id}");
+      } else {
+        print("❌ Cập nhật địa chỉ thất bại: ${diaChi.id}");
+      }
     } catch (e) {
       print("Lỗi khi cập nhật địa chỉ: $e");
     }
   }
 
-  // Xóa địa chỉ
   Future<void> deleteDiaChi(String id) async {
     try {
-      await _firestore.collection('DiaChi').doc(id).delete();
+      bool success = await apiService.deleteJson('DiaChis/$id');
+      if (success) {
+        print("✅ Xóa địa chỉ thành công: $id");
+      } else {
+        print("❌ Xóa địa chỉ thất bại: $id");
+      }
     } catch (e) {
       print("Lỗi khi xóa địa chỉ: $e");
     }

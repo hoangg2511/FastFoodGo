@@ -1,10 +1,16 @@
 import 'package:fastfoodgo/Models/CuaHangModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../ViewModels/ChitietCuaHangViewModel.dart';
+import '../ViewModels/GioHangViewModel.dart';
 import '../ViewModels/TimKiemViewModel.dart';
+import '../ViewModels/YeuThichViewModel.dart';
+import 'ChiTietCuaHang.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final bool autoFocus;
+
+  const SearchScreen({super.key, this.autoFocus = false});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -13,23 +19,17 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final SearchViewModel _viewModel = SearchViewModel();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _viewModel.fetchCuaHang().then((cuaHangList) {
-      if (cuaHangList.isNotEmpty) {
-        print("======== DỮ LIỆU TỪ INIT STATE ĐÃ TẢI XONG ========");
-        for (var ch in cuaHangList) {
-          print("🏪 Tên Cửa Hàng: ${ch.TenCuaHang}");
-          print("  ID: ${ch.id}, Đánh Giá: ${ch.DanhGia}");
-          print("  Khoảng Cách: ${ch.khoangCach}");
-          print("-------------------------------------------------");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (widget.autoFocus) {
+          _focusNode.requestFocus();
         }
-        print("=================================================");
-      } else {
-        print("🔴 fetchCuaHang() trả về danh sách rỗng.");
-      }
+      });
     }).catchError((error) {
       print("❌ Lỗi khi tải dữ liệu trong initState: $error");
     });
@@ -82,6 +82,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return SearchBar(
       controller: _searchController,
+      focusNode: _focusNode,
       hintText: "Tìm kiếm món ăn, cửa hàng",
       leading: const Icon(Icons.search),
       backgroundColor: const WidgetStatePropertyAll(Colors.white),
@@ -98,7 +99,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // 🟣 Filter
+
   Widget _buildFilterButtons(BuildContext context) {
     final vm = context.watch<SearchViewModel>();
     final filters = ["Tất cả", "Gà rán", "Burger", "Pizza", "Đồ uống", "Tráng miệng"];
@@ -131,7 +132,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // 🧮 Kết quả
+
   Widget _buildResultCount(BuildContext context) {
     final vm = context.watch<SearchViewModel>();
     return Row(
@@ -145,8 +146,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // 🧾 Danh sách món
-// 🧾 Danh sách món
+
   Widget _buildList(BuildContext context) {
     // Bọc phần cần dữ liệu bằng Consumer
     return Consumer<SearchViewModel>(
@@ -168,54 +168,76 @@ class _SearchScreenState extends State<SearchScreen> {
       },
     );
   }
-
   Widget _buildItem(CuaHangModel item) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.network(
-              item.AnhDaiDien.toString(),
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Container(width: 100, height: 100, color: Colors.grey[200], child: const Icon(Icons.fastfood)),
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MultiProvider(
+              providers: [
+                ChangeNotifierProvider(
+                  create: (_) => ChitietCuaHangViewModel(),
+                ),
+                ChangeNotifierProvider(
+                  create: (_) => GioHangViewModel(),
+                ),
+                ChangeNotifierProvider(
+                  create: (_) => YeuThichViewModel(),  // ⬅️ BẮT BUỘC THÊM
+                ),
+              ],
+              child: ShopDetail(CuaHangId: item.id),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.TenCuaHang,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
-                  const SizedBox(height: 4),
-                  // Text(item.restaurant, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                  // const SizedBox(height: 8),
-                  // Text(item.price,
-                  //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.orange[400])),
-                  // const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      const SizedBox(width: 4),
-                      Text("${item.DanhGia}", style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                      const SizedBox(width: 16),
-                      const Icon(Icons.location_on, color: Colors.grey, size: 16),
-                      const SizedBox(width: 4),
-                      Text(item.khoangCach, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                    ],
-                  ),
-                ],
+          ),
+        );
+
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.network(
+                item.AnhDaiDien.toString(),
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Container(width: 100, height: 100, color: Colors.grey[200], child: const Icon(Icons.fastfood)),
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.TenCuaHang,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+                    const SizedBox(height: 4),
+
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
+                        const SizedBox(width: 4),
+                        Text("${item.DanhGia}", style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                        const SizedBox(width: 16),
+                        const Icon(Icons.location_on, color: Colors.grey, size: 16),
+                        const SizedBox(width: 4),
+                        Text(item.khoangCach as String, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 }

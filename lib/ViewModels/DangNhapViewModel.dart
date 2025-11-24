@@ -46,7 +46,7 @@ class DangNhapViewModel extends ChangeNotifier {
       // 5️⃣ Lấy thông tin user vừa tạo
       final User? user = userCredential.user;
       if (user != null) {
-        final String maKH = user.uid; // ✅ ID duy nhất trong Firebase
+        final String maKH = user.uid;
         print("✅ Đăng ký thành công: ${user.displayName}");
         print("🆔 Mã khách hàng (MaKH): $maKH");
 
@@ -54,19 +54,15 @@ class DangNhapViewModel extends ChangeNotifier {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ChangeNotifierProvider(
-              create: (_) => ThongTinViewModel(),
-              child: DiaChi(maKH: maKH),
-            ),
+            builder: (_) => DangNhap(),
           ),
         );
+
 
 
       } else {
         print("⚠️ Không thể lấy thông tin người dùng sau khi đăng ký.");
       }
-
-
       notifyListeners();
     } catch (e) {
       print("⚠️ Lỗi đăng ký Google: $e");
@@ -77,45 +73,44 @@ class DangNhapViewModel extends ChangeNotifier {
   }
   Future<void> login(BuildContext context) async {
     try {
-      // 1️⃣ Mở hộp thoại đăng nhập Google
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
         print("❌ Người dùng đã hủy đăng nhập Google");
         return;
       }
 
-      // 2️⃣ Lấy token xác thực
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final googleAuth = await googleUser.authentication;
 
-      // 3️⃣ Tạo credential cho Firebase
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // 4️⃣ Đăng nhập vào Firebase
       final UserCredential userCredential =
       await FirebaseAuth.instance.signInWithCredential(credential);
       final User? user = userCredential.user;
 
       if (user != null) {
-        final String maKH = user.uid; // ✅ ID duy nhất trong Firebase
-        print("✅ Đăng ký thành công: ${user.displayName}");
-        print("🆔 Mã khách hàng (MaKH): $maKH");
+        final String maKH = user.uid;
+        final String email = user.email ?? "";
 
-        // 🔹 Sau khi đăng ký xong => chuyển sang Trang chủ và truyền maKH
+        print("✅ Đăng nhập thành công: ${user.displayName}");
+        print("🆔 MaKH: $maKH");
+        print("📧 Email: $email");
+
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (_) => ChangeNotifierProvider(
               create: (_) => ThongTinViewModel(),
-              child: DiaChi(maKH: maKH),
+              child: DiaChi(
+                maKH: maKH,
+                email: email,   //  ✅ truyền email qua trang địa chỉ
+              ),
             ),
           ),
               (route) => false,
         );
-      } else {
-        print("⚠️ Không thể lấy thông tin người dùng sau khi đăng ký.");
       }
 
     } catch (e) {
@@ -125,6 +120,7 @@ class DangNhapViewModel extends ChangeNotifier {
       );
     }
   }
+
 
   /// 🔹 Đăng xuất
   Future<void> logout() async {

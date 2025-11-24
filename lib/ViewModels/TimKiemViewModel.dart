@@ -95,7 +95,7 @@ class SearchViewModel extends ChangeNotifier {
       // 🔹 3. Lấy địa chỉ khách hàng làm gốc (origin)
       final khachHangAddress = _diaChiKH.first;
       final origin =
-          "${khachHangAddress.soNha ?? ''} ${khachHangAddress.Duong ?? ''}, ${khachHangAddress.phuongXa ?? ''}, ${khachHangAddress.quanHuyen ?? ''}, ${khachHangAddress.tinhTp ?? ''}, Việt Nam";
+          "${khachHangAddress.soNha} ${khachHangAddress.Duong ?? ''}, ${khachHangAddress.phuongXa ?? ''}, ${khachHangAddress.quanHuyen ?? ''}, ${khachHangAddress.tinhTp ?? ''}, Việt Nam";
 
       // 🔹 4. Tính khoảng cách cho từng cửa hàng
       for (var ch in _cuaHang) {
@@ -139,7 +139,7 @@ class SearchViewModel extends ChangeNotifier {
           return double.tryParse(cleaned) ?? double.infinity;
         }
 
-        return parseKm(a.khoangCach).compareTo(parseKm(b.khoangCach));
+        return parseKm(a.khoangCach as String?).compareTo(parseKm(b.khoangCach as String?));
       });
 
       // 🔹 6. In kết quả cuối cùng

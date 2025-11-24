@@ -9,7 +9,8 @@ import '../Repository/CuaHangRepository.dart';
 class CuaHangViewModel extends ChangeNotifier {
   final CuaHangRepository _repoCuaHang = CuaHangRepository();
   final DiaChiRepository _repoDiaChi = DiaChiRepository();
-
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
   String? selectedCuaHangId;
   List<CuaHangModel> _cuaHang = [];
    List<DiaChiModel> _diaChiKH = [];
@@ -17,67 +18,90 @@ class CuaHangViewModel extends ChangeNotifier {
   List<CuaHangModel> get cuaHang => _cuaHang;
   Future<List<CuaHangModel>> fetchCuaHang() async {
     try {
+      _isLoading = true;
+      notifyListeners();
+
       _diaChiKH = await _repoDiaChi.getDiaChiKhachHang();
       _diaChiCH = await _repoDiaChi.getDiaChiCuaHang();
       _cuaHang = await _repoCuaHang.getTatCaCuaHang();
-      //
-      // final mapService = MapService();
-      // // 🟡 Kiểm tra danh sách địa chỉ khách hàng
-      // if (_diaChiKH.isEmpty) {
-      //   print("❌ Không có địa chỉ khách hàng");
-      //   return _cuaHang;
-      // }
-      // final khachHangAddress = _diaChiKH.first;
-      // final origin =
-      //     "${khachHangAddress.soNha ?? ''} ${khachHangAddress.Duong ?? ''}, ${khachHangAddress.phuongXa ?? ''}, ${khachHangAddress.quanHuyen ?? ''}, ${khachHangAddress.tinhTp ?? ''}, Việt Nam";
-      // // 🏪 Lặp qua từng cửa hàng
-      // for (var ch in _cuaHang) {
-      //
-      //   final diaChiCH = _diaChiCH.firstWhere(
-      //
-      //         (dc) => dc.maCH == ch.id,
-      //     orElse: () => DiaChiModel(
-      //       id: '',
-      //       phuongXa: '',
-      //       quanHuyen: '',
-      //       soNha: '',
-      //       Duong: '',
-      //       status: 0,
-      //       maCH: '',
-      //       tinhTp: '',
-      //     ),
-      //   );
-      //   final destination =
-      //       "${diaChiCH.soNha ?? ''} ${diaChiCH.Duong ?? ''}, ${diaChiCH.phuongXa ?? ''}, ${diaChiCH.quanHuyen ?? ''}, ${diaChiCH.tinhTp ?? ''}, Việt Nam";
-      //
-      //   try {
-      //     final result = await mapService.getKhoangCach(
-      //       origin: origin,
-      //       destination: destination,
-      //     );
-      //
-      //     final distanceStr = result["distance"] ?? "0 km";
-      //     final durationStr = result["duration"] ?? "0 phút";
-      //
-      //     // ✅ Convert distance về double
-      //     ch.khoangCach = distanceStr;
-      //     ch.ThoiGianThucHienMon = durationStr;
-      //   } catch (e) {
-      //     print("⚠️ Không lấy được khoảng cách cho ${ch.TenCuaHang}: $e");
-      //     ch.khoangCach = "";
-      //     ch.ThoiGianThucHienMon = "";
-      //   }
-      // }
-      // _cuaHang.sort((a, b) => a.khoangCach.compareTo(b.khoangCach));
-      // for (var ch in _cuaHang) {
-      //   print("➡️ ${ch.TenCuaHang} - ${ch.khoangCach}");
-      // }
+
+      if (_diaChiKH.isEmpty) {
+        print("Không có địa chỉ khách hàng");
+        _isLoading = false;
+        notifyListeners();
+        return _cuaHang;
+      }
+
+      final khachHangAddress = _diaChiKH.first;
+      final origin =
+          "${khachHangAddress.soNha ?? ''} ${khachHangAddress.Duong ?? ''}, ${khachHangAddress.phuongXa ?? ''}, ${khachHangAddress.quanHuyen ?? ''}, ${khachHangAddress.tinhTp ?? ''}, Việt Nam";
+
+      final mapService = MapService();
+
+      // Tạo danh sách Future song song cho tất cả cửa hàng
+      final futures = _cuaHang.map((ch) async {
+        final diaChiCH = _diaChiCH.firstWhere(
+              (dc) => dc.maCH == ch.id,
+          orElse: () => DiaChiModel(
+            id: '',
+            phuongXa: '',
+            quanHuyen: '',
+            soNha: '',
+            Duong: '',
+            status: 0,
+            maCH: '',
+            tinhTp: '',
+            DCCuThe: '',
+          ),
+        );
+
+        final destination =
+            "${diaChiCH.soNha ?? ''} ${diaChiCH.Duong ?? ''}, ${diaChiCH.phuongXa ?? ''}, ${diaChiCH.quanHuyen ?? ''}, ${diaChiCH.tinhTp ?? ''}, Việt Nam";
+
+        try {
+          final result = await mapService.getKhoangCach(
+            origin: origin,
+            destination: destination,
+          );
+
+          ch.khoangCach = result["distance"] ?? "0 km";
+          ch.ThoiGianThucHienMon = result["duration"] ?? "0 phút";
+        } catch (e) {
+          print("Không lấy được khoảng cách cho ${ch.TenCuaHang}: $e");
+          ch.khoangCach = "";
+          ch.ThoiGianThucHienMon = "";
+        }
+
+        // Cập nhật UI ngay khi có dữ liệu
+        notifyListeners();
+      }).toList();
+
+      // Chạy tất cả song song
+      await Future.wait(futures);
+
+      // Sắp xếp cửa hàng theo khoảng cách
+      _cuaHang.sort((a, b) {
+        double parseDistance(String s) {
+          try {
+            return double.parse(s.replaceAll(RegExp(r'[^0-9.]'), ''));
+          } catch (_) {
+            return double.infinity;
+          }
+        }
+        return parseDistance(a.khoangCach).compareTo(parseDistance(b.khoangCach));
+      });
+
+      _isLoading = false;
+      notifyListeners();
 
       return _cuaHang;
     } catch (e) {
-      print("❌ Lỗi khi tải danh sách cửa hàng: $e");
+      print("Lỗi khi tải danh sách cửa hàng: $e");
+      _isLoading = false;
+      notifyListeners();
       return [];
     }
   }
+
 
 }

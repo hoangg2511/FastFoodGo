@@ -1,74 +1,97 @@
 import 'package:fastfoodgo/ViewModels/NguoiDungViewModel.dart';
 import 'package:fastfoodgo/ViewModels/YeuThichViewModel.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' show ChangeNotifierProvider, MultiProvider, Consumer, ReadContext;
-import '../Models/CuaHangModel.dart';
 import '../ViewModels/ChitietCuaHangViewModel.dart';
 import '../ViewModels/GioHangViewModel.dart';
 import '../ViewModels/TrangChuViewModel.dart';
 import 'ChiTietCuaHang.dart';
+import 'TimKiem.dart';
 
-class HomeScreen extends StatefulWidget {
+
+// 1. HomeScreen mới (Stateless) đóng vai trò là Provider Wrapper
+class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    // ➡️ Cung cấp CuaHangViewModel cho toàn bộ widget con
+    return ChangeNotifierProvider(
+      create: (_) => CuaHangViewModel(),
+      child: const _HomeScreenContent(),
+    );
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  CuaHangViewModel viewModel = new CuaHangViewModel();
+// 2. _HomeScreenContent (Stateful) chứa logic UI và State
+class _HomeScreenContent extends StatefulWidget {
+  const _HomeScreenContent({Key? key}) : super(key: key);
+
+  @override
+  State<_HomeScreenContent> createState() => _HomeScreenContentState();
+}
+
+class _HomeScreenContentState extends State<_HomeScreenContent> {
+  // Loại bỏ CuaHangViewModel viewModel = new CuaHangViewModel(); vì nó được quản lý bởi Provider
+
   final List<Map<String, dynamic>> LoaiMonAn = [
     {
       "icon": Icons.fastfood,
       "name": "Burger",
-      "color": Color(0xFFFFE0B2), // Màu nền
+      "color": const Color(0xFFFFE0B2), // Màu nền
       "iconColor": Colors.orange, // Màu icon
     },
     {
       "icon": Icons.local_pizza,
       "name": "Pizza",
-      "color": Color(0xFFFFCDD2),
+      "color": const Color(0xFFFFCDD2),
       "iconColor": Colors.redAccent,
     },
     {
       "icon": Icons.local_drink,
       "name": "Nước uống",
-      "color": Color(0xFFBBDEFB),
+      "color": const Color(0xFFBBDEFB),
       "iconColor": Colors.blueAccent,
     },
     {
       "icon": Icons.rice_bowl,
       "name": "Sushi",
-      "color": Color(0xFFC8E6C9),
+      "color": const Color(0xFFC8E6C9),
       "iconColor": Colors.green,
     },
     {
       "icon": Icons.ramen_dining,
       "name": "Mì",
-      "color": Color(0xFFD1C4E9),
+      "color": const Color(0xFFD1C4E9),
       "iconColor": Colors.purple,
     },
     {
       "icon": Icons.cake,
       "name": "Tráng miệng",
-      "color": Color(0xFFF8BBD0),
+      "color": const Color(0xFFF8BBD0),
       "iconColor": Colors.pinkAccent,
     },
   ];
-
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
+      // 1. Lấy địa chỉ Khách hàng (Cần địa chỉ để tính khoảng cách)
+      print("🔔 [INIT] Bắt đầu gọi getDiaChi()...");
       final nguoiDungVM = context.read<NguoiDungViewModel>();
       await nguoiDungVM.getDiaChi();
+      print("✅ [INIT] getDiaChi() hoàn tất. Danh sách địa chỉ:");
       print(nguoiDungVM.danhSachDiaChi);
+
+      // 2. Tải và Sắp xếp Cửa hàng
+      final cuaHangVM = context.read<CuaHangViewModel>();
+      // Hàm fetchCuaHang đã được gọi sau khi có địa chỉ, đảm bảo tính toán khoảng cách
+      await cuaHangVM.fetchCuaHang();
+      print("✅ [INIT] fetchCuaHang() hoàn tất và đã sắp xếp.");
 
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -83,16 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
               searchBar(),
               Banner(),
               danhSachTheLoai(),
-              SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Cửa hàng gần bạn',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              const SizedBox(height: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Cửa hàng gần bạn',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-              // SizedBox(height: 20),
-              DanhSachCuaHang(),
+              DanhSachCuaHang(), // Bây giờ sử dụng Consumer<CuaHangViewModel>
             ],
           ),
         ),
@@ -111,11 +133,11 @@ class _HomeScreenState extends State<HomeScreen> {
         )
             : null;
         return Container(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Icon(Icons.location_on, color: Colors.orange, size: 20),
-              SizedBox(width: 8),
+              const Icon(Icons.location_on, color: Colors.orange, size: 20),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       diaChiMacDinh != null
                           ? "${diaChiMacDinh.DCCuThe}, ${diaChiMacDinh.phuongXa},${diaChiMacDinh.quanHuyen} "
                           : "Chưa có địa chỉ",
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 14
                       ),
@@ -145,38 +167,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Widget searchBar() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: Offset(0, 2),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SearchScreen(autoFocus: true)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: TextField(
+          enabled: false,
+          decoration: InputDecoration(
+            hintText: 'Tìm món ăn, cửa hàng...',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           ),
-        ],
-      ),
-      child: TextField(
-        onChanged: (value) {
-          setState(() {});
-        },
-        decoration: InputDecoration(
-          hintText: 'Tìm món ăn, cửa hàng...',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
       ),
     );
   }
 
+
   Widget Banner() {
     return Container(
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
       height: 150,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -203,8 +232,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget itemBanner({required String title, required String subtitle, required String imageUrl,}) {
     return Container(
       width: 300,
-      padding: EdgeInsets.all(20),
-      margin: EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.orange[400]!, Colors.orange[600]!],
@@ -223,18 +252,18 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(title,
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold)),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(subtitle,
                     style: TextStyle(
                         color: Colors.white.withOpacity(0.9), fontSize: 12)),
               ],
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           // Ảnh
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
@@ -254,20 +283,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
+        const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Danh mục',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GridView.builder(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
@@ -287,15 +316,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        category['icon'],
+                        category['icon'] as IconData,
                         size: 32,
-                        color: category['iconColor'],
+                        color: category['iconColor'] as Color,
 
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
-                        category['name'],
-                        style: TextStyle(
+                        category['name'] as String,
+                        style: const TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w500),
                         textAlign: TextAlign.center,
                       ),
@@ -314,36 +343,40 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         Icon(icon, color: color ?? Colors.grey, size: 16),
-        SizedBox(width: 4),
+        const SizedBox(width: 4),
         Text(text, style: TextStyle(color: Colors.grey[600])),
       ],
     );
   }
 
   Widget DanhSachCuaHang() {
-    return FutureBuilder<List<CuaHangModel>>(
-      future: CuaHangViewModel().fetchCuaHang(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+    return Consumer<CuaHangViewModel>(
+      builder: (context, vm, child) {
+        final stores = vm.cuaHang;
+        if (vm.isLoading ) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32.0),
+              child: CircularProgressIndicator(color: Colors.orange),
+            ),
+          );
         }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text("Không có cửa hàng nào"));
+        if (stores.isEmpty) {
+          return const Center(child: Text("Không có cửa hàng nào gần bạn"));
         }
-        final stores = snapshot.data!;
         return ListView.builder(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: stores.length,
           itemBuilder: (context, index) {
             final store = stores[index];
             return GestureDetector(
               onTap: () {},
               child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Column(
                   children: [
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -368,69 +401,80 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       },
                       child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              spreadRadius: 1,
-                              blurRadius: 10,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                              child: Container(
-                                height: 150,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                     store.AnhDaiDien.toString(),
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                                child: Container(
+                                  height: 150,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                        store.AnhDaiDien?.toString() ?? '',
+                                      ),
+                                      fit: BoxFit.cover,
                                     ),
-                                    fit: BoxFit.cover, // ảnh phủ toàn bộ
                                   ),
+                                  child: store.AnhDaiDien == null
+                                      ? Image.asset(
+                                    'assets/images/default_store.jpg',
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: 150,
+                                  )
+                                      : null,
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(store.TenCuaHang,
-                                            style: TextStyle(
-                                                fontSize: 16, fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 5),
-                                        Text("Burger",
-                                            style: TextStyle(
-                                                color: Colors.grey[600], fontSize: 15)),
-                                        SizedBox(height: 5),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            ThongTinCuaHang(Icons.star, store.DanhGia.toStringAsFixed(1), Colors.amber),
-                                            ThongTinCuaHang(Icons.location_on_outlined, "1.2km"),
-                                            ThongTinCuaHang(
-                                                Icons.access_time_outlined, store.ThoiGianThucHienMon),
-                                          ],
-                                        ),
-                                      ],
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            store.TenCuaHang,
+                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            "Burger",
+                                            style: TextStyle(color: Colors.grey[600], fontSize: 15),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              ThongTinCuaHang(Icons.star, store.DanhGia.toStringAsFixed(1), Colors.amber),
+                                              // Hiển thị khoảng cách đã được sắp xếp
+                                              ThongTinCuaHang(Icons.location_on_outlined, store.khoangCach),
+                                              ThongTinCuaHang(Icons.access_time_outlined, store.ThoiGianThucHienMon),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          )
+
                       ),
                     ),
                   ],
@@ -442,7 +486,4 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-
 }
-
-

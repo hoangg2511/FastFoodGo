@@ -52,7 +52,7 @@ class GioHangViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _diaChiList = await _diaChiRepo.getDiaChiByUser(userId);
+      _diaChiList = await _diaChiRepo.getDiaChiByUser();
     } catch (e) {
       print("⚠️ Lỗi khi load địa chỉ: $e");
       _diaChiList = [];

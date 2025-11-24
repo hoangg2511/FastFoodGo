@@ -26,6 +26,8 @@ import '../Repository/DonHangRepository.dart';
     List<GiamGiaModel> danhSachGiamGia = [];
     List<LoaiGGModel> danhSachLoaiGG = [];
     NguoiDung? nguoiDung;
+    String selectDiaChi = '';
+
     Map<String, List<GiamGiaModel>> groupedDiscounts = {};
     String? errorMessage;
     bool isLoading = false;
@@ -91,8 +93,14 @@ import '../Repository/DonHangRepository.dart';
           return;
         }
 
-        danhSachDiaChi = await _diaChiRepo.getDiaChiByUser(nguoiDung.id);
-        print("Đã tải ${danhSachDiaChi.length} địa chỉ cho user: ${nguoiDung.id}");
+        danhSachDiaChi = await _diaChiRepo.getDiaChiByUser();
+
+        print("===== DANH SÁCH ĐỊA CHỈ (User: ${nguoiDung.id}) =====");
+        for (var dc in danhSachDiaChi) {
+          print("- ID: ${dc.id}, Ten: ${dc.soNha}, SDT: ${dc.Duong}, DiaChi: ${dc.quanHuyen}");
+        }
+        print("===== Tổng số: ${danhSachDiaChi.length} địa chỉ =====");
+
       } catch (e) {
         print("Lỗi khi load danh sách địa chỉ: $e");
       } finally {
@@ -101,7 +109,8 @@ import '../Repository/DonHangRepository.dart';
       }
     }
 
-    Future<void> thanhToan(List<GioHangModel> danhSachMonAn, List<String> maGG,String TrangThaiThanhToan) async {
+
+    Future<void> thanhToan(List<GioHangModel> danhSachMonAn, List<String> maGG,String TrangThaiThanhToan, String DiaChi) async {
       try {
         if (selectThanhToan == "VNPay") {
           // Gọi phương thức VNPay
@@ -110,7 +119,7 @@ import '../Repository/DonHangRepository.dart';
         }
 
         // Nếu không phải VNPay, gọi hàm tạo đơn bình thường
-        await taoDonHang(danhSachMonAn, maGG, selectThanhToan,TrangThaiThanhToan);
+        await taoDonHang(danhSachMonAn, maGG, selectThanhToan,TrangThaiThanhToan,DiaChi);
       } catch (e, st) {
         print("❌ Lỗi khi thanh toán: $e");
         print(st);
@@ -119,7 +128,7 @@ import '../Repository/DonHangRepository.dart';
     String generateMaDH() {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       final rand = DateTime.now().millisecondsSinceEpoch % 100000000;
-      return 'DH' + rand.toString().padLeft(8, '0');
+      return 'DH${rand.toString().padLeft(8, '0')}';
     }
 
 
@@ -131,7 +140,8 @@ import '../Repository/DonHangRepository.dart';
         List<GioHangModel> danhSachMonAn,
         List<String> maGG,
         String? selectThanhToan,
-        String TrangThaiThanhToan
+        String TrangThaiThanhToan,
+        String DiaChi
         ) async {
       try {
         final nguoiDung = await _nguoiDungRepo.getNguoiDungHienTai();
@@ -168,20 +178,20 @@ import '../Repository/DonHangRepository.dart';
           final optionsForMon = allOptions
               .where((opt) => optionNames.contains(opt.ten))
               .toList();
-
           return ChiTietDonHangModel(
             maCTDH: generateMaCTDH(),  // Duy nhất cho mỗi món
             soLuong: mon.quantity,
             maDH: maDonHang,            // Chung maDH
             maMonAn: mon.monAnId,
+              maDiaChi:selectDiaChi,
             gia: mon.finalPrice.toInt(),
             note: mon.note,
             optionMonAn: optionsForMon,
           );
         }).toList();
 
-        // ⭐ In ra danh sách trước khi gửi API
-        print("===== 📝 Danh sách ChiTietDonHangModel =====");
+        //  In ra danh sách trước khi gửi API
+        print("=====  Danh sách ChiTietDonHangModel =====");
         for (var ct in chiTietDonHangList) {
           print(ct.toJson());
         }
@@ -225,7 +235,7 @@ import '../Repository/DonHangRepository.dart';
 
     Future<void> fetchLoaiGGTheoDanhSach() async {
       try {
-        print("🟡 [DEBUG] Gọi hàm fetchLoaiGGTheoDanhSach()...");
+        print(" Gọi hàm fetchLoaiGGTheoDanhSach()...");
 
         isLoading = true;
         errorMessage = null;
@@ -234,7 +244,7 @@ import '../Repository/DonHangRepository.dart';
 
       } catch (e) {
         errorMessage = "Lỗi khi lấy danh sách loại giảm giá: $e";
-        print("❌ $errorMessage");
+        print(" $errorMessage");
       } finally {
         isLoading = false;
         notifyListeners();

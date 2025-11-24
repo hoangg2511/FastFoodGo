@@ -47,9 +47,9 @@ class DonHangViewModel extends ChangeNotifier {
       final monAns = await _repoMonAn.getMonAn();       // Danh sách món ăn
       final donHangs = await _repoDonHang.getDonHang(); // Danh sách đơn hàng
 
-      print("📌 Số chi tiết đơn hàng: ${ctdhList.length}");
-      print("📌 Số món ăn: ${monAns.length}");
-      print("📌 Số đơn hàng: ${donHangs.length}");
+      print(" Số chi tiết đơn hàng: ${ctdhList.length}");
+      print(" Số món ăn: ${monAns.length}");
+      print(" Số đơn hàng: ${donHangs.length}");
 
 
       final combinedList = ctdhList.map((ct) {

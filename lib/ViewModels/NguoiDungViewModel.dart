@@ -75,47 +75,24 @@ class NguoiDungViewModel extends ChangeNotifier{
   // 🔹 Lấy tất cả địa chỉ của khách hàng
   Future<void> getDiaChi() async {
     try {
-      isLoading = true;
-      notifyListeners();
-
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        print("⚠️ Không có user Firebase đang đăng nhập");
-        return;
-      }
-
-      final userId = user.uid;
-
-      // Gọi API lấy địa chỉ theo userId
-      final data = await _repo.getDiaChiKhachHang();
+      // SỬA ĐỔI: Đảm bảo truyền userId vào repo nếu cần
+      final data = await _repo.getDiaChiByUser();
 
       danhSachDiaChi = data;
 
-      // Lấy địa chỉ mặc định
-      DiaChiModel diaChiMacDinh = danhSachDiaChi.isNotEmpty
-          ? danhSachDiaChi.firstWhere(
-            (dc) => dc.status == 1,
-        orElse: () => danhSachDiaChi.first,
-      )
-          : DiaChiModel(
-        id: '',
-        soNha: '',
-        Duong: '',
-        phuongXa: '',
-        quanHuyen: '',
-        tinhTp: '',
-        status: 0,
-        maCH: '',
-        DCCuThe: '',
-      );
+      // (Optional) Cập nhật biến diaChiMacDinh nếu bạn có biến này trong ViewModel
+      // diaChiMacDinh = data.isNotEmpty
+      //    ? data.firstWhere((dc) => dc.status == 1, orElse: () => data.first)
+      //    : null;
 
-      print("📦 Danh sách địa chỉ:");
+      print("📦 Danh sách địa chỉ đã được gán (Sau khi await):");
       for (var dc in danhSachDiaChi) {
         print(dc.toJson());
       }
     } catch (e) {
       print("❌ Lỗi khi lấy địa chỉ: $e");
+      // Thêm logic handle lỗi: Hiển thị Snackbar hoặc đặt danh sách rỗng
+      danhSachDiaChi = [];
     } finally {
       isLoading = false;
       notifyListeners();

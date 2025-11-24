@@ -41,8 +41,7 @@ class ChiTietDonHangRepository {
   Future<List<ChiTietDonHangModel>> getCTDH() async {
     try {
       // 🔹 Gọi API GET tất cả giảm giá
-      final data = await _apiService.getJsonList('ChiTietDonHangs'); // endpoint backend trả về list GiamGia
-
+      final data = await _apiService.getJsonList('ChiTietDonHangs');
       // 🔹 Chuyển danh sách JSON thành List<GiamGiaModel>
       final list = data.map((e) => ChiTietDonHangModel.fromJson(e)).toList();
 

@@ -1,6 +1,8 @@
 import 'package:fastfoodgo/ViewModels/DangNhapViewModel.dart';
 import 'package:fastfoodgo/Views/DangNhap.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../ViewModels/DiaChiViewModel.dart';
 import '../ViewModels/NguoiDungViewModel.dart';
 import '../Models/NguoiDungModel.dart';
 import 'Profile/ThongTinCaNhan.dart';
@@ -145,45 +147,45 @@ class _AccountScreenState extends State<AccountScreen> {
                     iconBgColor: Colors.green[50]!,
                     title: 'Địa chỉ giao hàng',
                     subtitle: 'Quản lý địa chỉ nhận hàng',
-                    onTap: () => _navigateToDeliveryAddress(),
+                    onTap: () => _navigateToDeliveryAddress(context),
                   ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.payment,
-                    iconColor: Colors.orange,
-                    iconBgColor: Colors.orange[50]!,
-                    title: 'Phương thức thanh toán',
-                    subtitle: 'Thẻ và ví điện tử',
-                    onTap: () => _navigateToPaymentMethod(),
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.notifications,
-                    iconColor: Colors.purple,
-                    iconBgColor: Colors.purple[50]!,
-                    title: 'Thông báo',
-                    subtitle: 'Cài đặt thông báo',
-                    onTap: () => _navigateToNotifications(),
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.help,
-                    iconColor: Colors.cyan,
-                    iconBgColor: Colors.cyan[50]!,
-                    title: 'Hỗ trợ',
-                    subtitle: 'Liên hệ và FAQ',
-                    onTap: () => _navigateToSupport(),
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.settings,
-                    iconColor: Colors.grey[600]!,
-                    iconBgColor: Colors.grey[100]!,
-                    title: 'Cài đặt',
-                    subtitle: null,
-                    onTap: () => _navigateToSettings(),
-                    isLast: true,
-                  ),
+                  // _buildDivider(),
+                  // _buildMenuItem(
+                  //   icon: Icons.payment,
+                  //   iconColor: Colors.orange,
+                  //   iconBgColor: Colors.orange[50]!,
+                  //   title: 'Phương thức thanh toán',
+                  //   subtitle: 'Thẻ và ví điện tử',
+                  //   onTap: () => _navigateToPaymentMethod(),
+                  // ),
+                  // _buildDivider(),
+                  // _buildMenuItem(
+                  //   icon: Icons.notifications,
+                  //   iconColor: Colors.purple,
+                  //   iconBgColor: Colors.purple[50]!,
+                  //   title: 'Thông báo',
+                  //   subtitle: 'Cài đặt thông báo',
+                  //   onTap: () => _navigateToNotifications(),
+                  // ),
+                  // _buildDivider(),
+                  // _buildMenuItem(
+                  //   icon: Icons.help,
+                  //   iconColor: Colors.cyan,
+                  //   iconBgColor: Colors.cyan[50]!,
+                  //   title: 'Hỗ trợ',
+                  //   subtitle: 'Liên hệ và FAQ',
+                  //   onTap: () => _navigateToSupport(),
+                  // ),
+                  // _buildDivider(),
+                  // _buildMenuItem(
+                  //   icon: Icons.settings,
+                  //   iconColor: Colors.grey[600]!,
+                  //   iconBgColor: Colors.grey[100]!,
+                  //   title: 'Cài đặt',
+                  //   subtitle: null,
+                  //   onTap: () => _navigateToSettings(),
+                  //   isLast: true,
+                  // ),
                   _buildDivider(),
                   _buildMenuItem(
                     icon: Icons.logout,
@@ -250,26 +252,33 @@ class _AccountScreenState extends State<AccountScreen> {
   void _navigateToPersonalInfo() {
     Navigator.push(context, MaterialPageRoute(builder: (_) => PersonalInfoScreen()));
   }
-
-  void _navigateToDeliveryAddress() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => DeliveryAddressScreen()));
+  void _navigateToDeliveryAddress(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => DiaChiViewModel(),
+          child: DeliveryAddressScreen(),
+        ),
+      ),
+    );
   }
 
-  void _navigateToPaymentMethod() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentMethodScreen()));
-  }
-
-  void _navigateToNotifications() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationsScreen()));
-  }
-
-  void _navigateToSupport() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => SupportScreen()));
-  }
-
-  void _navigateToSettings() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen()));
-  }
+  // void _navigateToPaymentMethod() {
+  //   Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentMethodScreen()));
+  // }
+  //
+  // void _navigateToNotifications() {
+  //   Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationsScreen()));
+  // }
+  //
+  // void _navigateToSupport() {
+  //   Navigator.push(context, MaterialPageRoute(builder: (_) => SupportScreen()));
+  // }
+  //
+  // void _navigateToSettings() {
+  //   Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen()));
+  // }
   void _navigateToLogout() {
     _dangNhapMV.logout();
     Navigator.push(context, MaterialPageRoute(builder: (_) => DangNhap()));

@@ -364,7 +364,7 @@ class _DangKyState extends State<DangKy> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {_dangNhapVM.DangKyVoiGG(context);},
+                  onPressed: () {_dangNhapVM.login(context);},
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
                     backgroundColor: Color(0xfff9fafb),

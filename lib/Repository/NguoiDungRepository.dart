@@ -116,6 +116,7 @@ class NguoiDungRepository {
   }
   Future<bool> taoNguoiDung(NguoiDung nguoiDung) async {
     try {
+      print("gọi tới hàm taojh người dùng");
       // Endpoint API để tạo người dùng mới
       final endpoint = "KhachHangs";
 

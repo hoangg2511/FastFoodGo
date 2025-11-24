@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DiaChiModel {
   String id;
@@ -22,9 +21,9 @@ class DiaChiModel {
     required this.tinhTp,
     required this.DCCuThe,
   });
-  factory DiaChiModel.fromJson(Map<String, dynamic> json, {String id = ''}) {
+  factory DiaChiModel.fromJson(Map<String, dynamic> json) {
     return DiaChiModel(
-      id: id,
+      id: json['maDiaChi'],
       phuongXa: json['phuongXa'] ?? '',
       quanHuyen: json['quanHuyen'] ?? '',
       soNha: json['soNha'] ?? '',
@@ -51,11 +50,11 @@ class DiaChiModel {
     };
   }
 
-  // Tạo từ DocumentSnapshot của Firestore
-  factory DiaChiModel.fromSnapshot(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return DiaChiModel.fromJson(data, id: doc.id);
-  }
+  // // Tạo từ DocumentSnapshot của Firestore
+  // factory DiaChiModel.fromSnapshot(DocumentSnapshot doc) {
+  //   final data = doc.data() as Map<String, dynamic>;
+  //   return DiaChiModel.fromJson(data, id: doc.id);
+  // }
 }
 
 

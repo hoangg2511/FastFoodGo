@@ -1,4 +1,5 @@
 
+import 'package:fastfoodgo/Models/DiaChiModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../Models/GiamGiaModel.dart';
@@ -489,10 +490,7 @@ class ThanhToanScreenState extends State<ThanhToanScreen> {
           orElse: () => addresses.first,
         );
 
-        if (selectDiaChi == null) {
-          selectDiaChi =
-              "${diaChiMacDinh.soNha}, ${diaChiMacDinh.phuongXa}, ${diaChiMacDinh.quanHuyen}";
-        }
+        selectDiaChi ??= "${diaChiMacDinh.soNha}, ${diaChiMacDinh.phuongXa}, ${diaChiMacDinh.quanHuyen}";
 
         return ListView(
           padding: const EdgeInsets.all(16),
@@ -702,13 +700,14 @@ class ThanhToanScreenState extends State<ThanhToanScreen> {
           (a) => a.status == 1,
           orElse: () => vm.danhSachDiaChi.first,
         );
-
-        // 2️⃣ Nếu người dùng đã chọn địa chỉ khác thì lấy địa chỉ đó
         final diaChiDuocChon = vm.danhSachDiaChi.firstWhere(
-          (a) => "${a.soNha}, ${a.phuongXa}, ${a.quanHuyen}" == selectDiaChi,
+              (a) => "${a.soNha}, ${a.phuongXa}, ${a.quanHuyen}" == selectDiaChi,
           orElse: () => diaChiMacDinh,
         );
 
+        print("Địa chỉ được chọn: ${diaChiDuocChon.soNha}, ${diaChiDuocChon.Duong}, ${diaChiDuocChon.phuongXa}");
+        print("ID của địa chỉ được chọn: ${diaChiDuocChon.id}");
+        vm.selectDiaChi = diaChiDuocChon.id;
         // 3️⃣ Tạo chuỗi địa chỉ hiển thị
         final subtitle =
             "${diaChiDuocChon.soNha}, ${diaChiDuocChon.Duong}, ${diaChiDuocChon.phuongXa}, ${diaChiDuocChon.quanHuyen}, ${diaChiDuocChon.tinhTp}";
@@ -848,7 +847,6 @@ class ThanhToanScreenState extends State<ThanhToanScreen> {
       builder: (context, thanhToanVM, child) {
         final vnPayVM = context.read<VnPayViewModel>();
         final gioHangVM = context.read<GioHangViewModel>();
-
         return Container(
           padding: const EdgeInsets.all(16),
           color: Colors.white,
@@ -858,10 +856,9 @@ class ThanhToanScreenState extends State<ThanhToanScreen> {
               final maGG = thanhToanVM.selectedDiscounts.values.toList();
               final String trangThaiThanhToan =
                   selectThanhToan ?? 'COD'; // khởi tạo trạng thái
-
               // 1️⃣ Tạo đơn hàng
               String maDH = await thanhToanVM.taoDonHang(
-                  items, maGG, selectThanhToan, trangThaiThanhToan);
+                  items, maGG, selectThanhToan, trangThaiThanhToan,selectDiaChi!);
 
               // 2️⃣ Kiểm tra phương thức thanh toán
               if (selectThanhToan == 'VNPay') {

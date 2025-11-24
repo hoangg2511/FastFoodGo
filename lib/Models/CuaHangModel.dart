@@ -7,7 +7,7 @@ class CuaHangModel {
   final String TenCuaHang;
   final double DanhGia;
   final String? Sdt;
-   String khoangCach;
+  String khoangCach;
   final List<DiaChiModel> DiaChi;
    String ThoiGianThucHienMon;
   final String TrangThai;

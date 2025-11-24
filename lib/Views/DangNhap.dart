@@ -215,73 +215,71 @@ class _DangNhapState extends State<DangNhap> {
                 ),
 
                 // Divider "hoặc"
-                SizedBox(height: 20),
-                Row(
-                  children: const [
-                    Expanded(
-                        child:
-                        Divider(color: Color(0xff6b7280),
-                            thickness: 1,
-                            endIndent: 10)),
-                    Text("Hoặc", style: TextStyle(color: Color(0xff6b7280))),
-                    Expanded(
-                        child:
-                        Divider(color: Color(0xff6b7280),
-                            thickness: 1,
-                            indent: 10)),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // Social buttons
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: Color(0xfff9fafb),
-                      foregroundColor: Color(0xff374151),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: const BorderSide(
-                          color: Color(0xffe9ebee), // màu viền
-                          width: 1, // độ dày viền
-                        ),),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 15),
-                    ),
-                    child: const Text(
-                      "Tiếp tục với Facebook",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {_dangNhapVM.login(context);},
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: Color(0xfff9fafb),
-                      foregroundColor: Color(0xff374151),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: const BorderSide(
-                          color: Color(0xffe9ebee), // màu viền
-                          width: 1, // độ dày viền
-                        ),),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 15),
-                    ),
-                    child: const Text(
-                      "Tiếp tục với Google",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
+                // SizedBox(height: 20),
+                // Row(
+                //   children: const [
+                //     Expanded(
+                //         child:
+                //         Divider(color: Color(0xff6b7280),
+                //             thickness: 1,
+                //             endIndent: 10)),
+                //     Text("Hoặc", style: TextStyle(color: Color(0xff6b7280))),
+                //     Expanded(
+                //         child:
+                //         Divider(color: Color(0xff6b7280),
+                //             thickness: 1,
+                //             indent: 10)),
+                //   ],
+                // ),
+                // const SizedBox(height: 20),
+                // // Social buttons
+                // SizedBox(
+                //   width: double.infinity,
+                //   child: ElevatedButton(
+                //     onPressed: () {},
+                //     style: ElevatedButton.styleFrom(
+                //       elevation: 0,
+                //       backgroundColor: Color(0xfff9fafb),
+                //       foregroundColor: Color(0xff374151),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(10),
+                //         side: const BorderSide(
+                //           color: Color(0xffe9ebee), // màu viền
+                //           width: 1, // độ dày viền
+                //         ),),
+                //       padding: const EdgeInsets.symmetric(
+                //           horizontal: 30, vertical: 15),
+                //     ),
+                //     child: const Text(
+                //       "Tiếp tục với Facebook",
+                //       style: TextStyle(fontWeight: FontWeight.bold),
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
+                // SizedBox(
+                //   width: double.infinity,
+                //   child: ElevatedButton(
+                //     onPressed: () {_dangNhapVM.login(context);},
+                //     style: ElevatedButton.styleFrom(
+                //       elevation: 0,
+                //       backgroundColor: Color(0xfff9fafb),
+                //       foregroundColor: Color(0xff374151),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(10),
+                //         side: const BorderSide(
+                //           color: Color(0xffe9ebee), // màu viền
+                //           width: 1, // độ dày viền
+                //         ),),
+                //       padding: const EdgeInsets.symmetric(
+                //           horizontal: 30, vertical: 15),
+                //     ),
+                //     child: const Text(
+                //       "Tiếp tục với Google",
+                //       style: TextStyle(fontWeight: FontWeight.bold),
+                //     ),
+                //   ),
+                // ),
                 // Đăng ký ngay
                 SizedBox(height: 20),
                 Row(
